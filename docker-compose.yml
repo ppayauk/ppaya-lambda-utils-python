@@ -1,0 +1,61 @@
+version: "3.8"
+services:
+  cli:
+    image: local-sam/ppaya_lambda_utils_python:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/opt/src
+    env_file:
+      - docker_dev.env
+    entrypoint:
+      - /opt/src/entrypoint.sh
+      - cli
+  tests:
+    image: local-sam/ppaya_lambda_utils_python:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/opt/src
+    env_file:
+      - docker_dev.env
+    entrypoint:
+      - /opt/src/entrypoint.sh
+      - tests
+      - ${TEST_ARGS}
+  lint:
+    image: local-sam/ppaya_lambda_utils_python:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/opt/src
+    env_file:
+      - docker_dev.env
+    entrypoint:
+      - /opt/src/entrypoint.sh
+      - lint
+  docs:
+    image: local-sam/ppaya_lambda_utils_python:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/opt/src
+    env_file:
+      - docker_dev.env
+    entrypoint:
+      - /opt/src/entrypoint.sh
+      - docs
