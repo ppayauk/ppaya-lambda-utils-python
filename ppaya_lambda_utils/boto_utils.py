@@ -44,7 +44,7 @@ class BotoClients(object):
     def __init__(self, config: Optional[Config] = None) -> None:
         self.set_default_config(config)
 
-    def set_default_config(self, config: Optional[Config] = None) -> None:
+    def set_default_config(self, config: Config) -> None:
         self._default_config = config
 
     def get_client(self, name: str, config: Optional[Config] = None) -> Any:
@@ -62,7 +62,7 @@ class BotoClients(object):
         return self._resources[name]
 
 
-boto_clients = BotoClients()
+boto_clients: BotoClients = BotoClients()
 
 
 def publish_to_sns(
