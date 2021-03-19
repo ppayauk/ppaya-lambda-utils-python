@@ -87,7 +87,7 @@ def send_to_sqs(
         resource: SQSServiceResource,
         queue_url: str,
         entries: List[SendMessageBatchRequestEntryTypeDef],
-        max_batch_size: int = 10) -> Set:
+        max_batch_size: int = 10) -> Set[str]:
     """
     Send a list of dictionaries to an SQS queue.  A maximum of 10 messages
     can be sent in a single call to `send_messages` so if there are more than
