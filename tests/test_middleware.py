@@ -16,12 +16,17 @@ def lambda_event():
     return {'records': []}
 
 
+@metrics.log_metrics
+@logger.inject_lambda_context
 @observability_init_middleware(
     logger=logger, metrics=metrics, log_structure=log_structure)
 def my_handler_ok(event, context):
+    metrics.add_metric(name='my_handler_ok', unit='Count', value=1)
     return {'result': 'OK'}
 
 
+@metrics.log_metrics
+@logger.inject_lambda_context
 @observability_init_middleware(
     logger=logger, metrics=metrics, log_structure=log_structure)
 def my_handler_fail(event, context):
