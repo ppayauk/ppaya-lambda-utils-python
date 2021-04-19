@@ -32,4 +32,9 @@ jobs:
         run: make run-lint
         
       - name: Run tests
-        run: make run-tests
+        run: make run-tests TEST_ARGS=pytest-cov.txt
+
+      - name: pytest-coverage-commentator
+        uses: coroo/pytest-coverage-commentator@v1.0.2
+        with:
+          pytest-coverage: pytest-cov.txt
