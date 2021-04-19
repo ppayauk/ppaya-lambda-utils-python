@@ -156,6 +156,7 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
+pytest-cov.txt
 
 # Translations
 *.mo

@@ -34,3 +34,9 @@ Middleware
 
 .. automodule:: ppaya_lambda_utils.middleware
     :members:
+
+Stores
+******
+
+.. automodule:: ppaya_lambda_utils.stores.dynamodb
+    :members:
