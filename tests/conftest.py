@@ -2,7 +2,8 @@ import json
 
 from aws_lambda_powertools import Logger
 import boto3
-from moto import mock_ssm, mock_kms, mock_sns, mock_sqs
+from moto import (
+    mock_ssm, mock_kms, mock_sns, mock_sqs, mock_dynamodb2)
 import pytest
 
 
@@ -70,3 +71,45 @@ def sns_subscription(sqs, sns_topic):
 def sqs_queue(sqs):
     queue = sqs.create_queue(QueueName='test-queue')
     yield queue
+
+
+@pytest.fixture(scope='function')
+def dynamodb():
+    with mock_dynamodb2():
+        yield boto3.resource('dynamodb')
+
+
+@pytest.fixture(scope='function')
+def dynamodb_table(dynamodb):
+    """Create a DynamoDB surveys table fixture."""
+    table = dynamodb.create_table(
+        TableName='test-table',
+        KeySchema=[
+            {
+                'AttributeName': 'PK',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'SK',
+                'KeyType': 'RANGE'
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'PK',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'SK',
+                'AttributeType': 'S'
+            },
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 1,
+            'WriteCapacityUnits': 1
+        },
+    )
+
+    table.meta.client.get_waiter('table_exists').wait(
+        TableName='test-table')
+    yield table
