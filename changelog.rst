@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.4
+=====
+- Add input data classes for dynamodb for put_item and update_item
+
 0.0.3
 =====
 - Add DynamoDBStore to reduce some boilerplate code in lambda functions
