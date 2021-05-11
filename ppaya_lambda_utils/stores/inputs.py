@@ -134,7 +134,7 @@ def to_update_item_kwargs(
 def graphql_payload_to_input(
         payload: Dict[str, Any],
         input_class=Type[AbstractInputData],
-        **kwargs: str) -> AbstractInputData:
+        **kwargs: Any) -> AbstractInputData:
     """
     Instantiate an input data class from a dictionary payload.
     The payload is expected to be an argument from a graphql resolver event

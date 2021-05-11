@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.5
+=====
+- More flexible type-checking for graphql_payload_to_input kwargs
+
 0.0.4
 =====
 - Add input data classes for dynamodb for put_item and update_item
