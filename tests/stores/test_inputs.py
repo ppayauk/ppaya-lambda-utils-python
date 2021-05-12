@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import Enum
 from typing import Optional, Tuple, Union
 
@@ -16,6 +17,7 @@ class TestStatus(Enum):
 class CreateTestInput(AbstractInputData):
     id: str
     name: str
+    size: float
     created_by: str
     created_at: str
     company_number: Optional[str] = None
@@ -29,6 +31,7 @@ class UpdateTestInput(AbstractInputData):
     id: str
     updated_at: str
     name: Optional[str] = None
+    size: Optional[float] = None
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     status: Optional[TestStatus] = None
@@ -62,6 +65,7 @@ def test_to_new_put_item() -> None:
     input_data = CreateTestInput(
         id='id-1',
         name='Test',
+        size=1.5,
         created_by='123',
         company_number='CO1',
         company_type='PLC',
@@ -76,6 +80,7 @@ def test_to_new_put_item() -> None:
         'SK_GSI1': 'COMPANY#CO1',
         'id': 'id-1',
         'name': 'Test',
+        'size': Decimal('1.5'),
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',
@@ -83,13 +88,16 @@ def test_to_new_put_item() -> None:
         'itemType': 'TEST',
         'status': TestStatus.ACTIVE.name,
     }
-    assert to_new_put_item(parser) == expected
+    item = to_new_put_item(parser)
+    assert item == expected
+    assert isinstance(item['size'], Decimal)
 
 
 def test_to_update_item_args() -> None:
     record = UpdateTestInput(
         id='id-1',
         name='Test 2',
+        size=2.5,
         company_number='CO2',
         updated_at='2021-04-20T23:00:00Z'
     )
@@ -100,12 +108,14 @@ def test_to_update_item_args() -> None:
         'UpdateExpression': (
             'SET #updated_at = :updated_at, '
             '#name = :name, '
+            '#size = :size, '
             '#company_number = :company_number, '
             '#SK_GSI1 = :SK_GSI1'
         ),
         'ExpressionAttributeValues': {
             ':updated_at': '2021-04-20T23:00:00Z',
             ':name': 'Test 2',
+            ':size': Decimal('2.5'),
             ':company_number': 'CO2',
             ':SK_GSI1': 'COMPANY#CO2',
         },
@@ -113,6 +123,7 @@ def test_to_update_item_args() -> None:
             '#id': 'id',
             '#updated_at': 'updatedAt',
             '#name': 'name',
+            '#size': 'size',
             '#company_number': 'companyNumber',
             '#SK_GSI1': 'SK_GSI1',
         },
@@ -126,6 +137,7 @@ def test_graphql_payload_to_input() -> None:
     payload = {
         'id': 'test-2',
         'name': 'Test 1',
+        'size': 1.5,
         'companyNumber': 'CO2',
     }
 
@@ -137,6 +149,7 @@ def test_graphql_payload_to_input() -> None:
     assert isinstance(result, UpdateTestInput)
     assert result.id == 'test-2'
     assert result.name == 'Test 1'
+    assert result.size == 1.5
     assert result.company_number == 'CO2'
     assert result.updated_at == '2021-04-20T23:00:00Z'
     assert result.company_type is None

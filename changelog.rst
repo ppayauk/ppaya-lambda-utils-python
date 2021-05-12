@@ -5,6 +5,7 @@ Change Log
 0.0.5
 =====
 - More flexible type-checking for graphql_payload_to_input kwargs
+- Convert floats to decimals when integrating with DynamoDB
 
 0.0.4
 =====

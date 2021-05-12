@@ -1,3 +1,5 @@
+from decimal import Decimal
+from enum import Enum
 from typing import Any, Dict
 
 
@@ -25,3 +27,17 @@ def dict_to_camel_case(snake_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
     return {
         to_camel_case(k): v for k, v in snake_dict.items()}
+
+
+def to_dynamodb_compatible_type(val: Any) -> Any:
+    """
+    Convert a value to a type compatible with dynamodb datatypes.
+    """
+    result: Any = None
+    if isinstance(val, Enum):
+        result = val.name
+    elif isinstance(val, float):
+        result = Decimal(str(val))
+    else:
+        result = val
+    return result

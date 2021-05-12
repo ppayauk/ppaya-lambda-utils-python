@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from dataclasses import dataclass, asdict, fields
-from enum import Enum
 from typing import Any, Dict, List, Protocol, Tuple, Type
 
-from ppaya_lambda_utils.stores.utils import to_camel_case, dict_to_camel_case
+from ppaya_lambda_utils.stores.utils import (
+    to_dynamodb_compatible_type, to_camel_case, dict_to_camel_case)
 
 
 @dataclass
@@ -60,8 +60,8 @@ def to_new_put_item(parser: AbstracInputParser) -> Dict[str, Any]:
     """
     item = asdict(parser.input_data)
     assert isinstance(item, dict)
-    item = {
-        k: v.name if isinstance(v, Enum) else v for k, v in item.items()}
+    item = {k: to_dynamodb_compatible_type(v) for k, v in item.items()}
+
     item = dict_to_camel_case(item)
     item['PK'] = parser.get_pk()
     item['SK'] = parser.get_sk()
@@ -103,8 +103,8 @@ def to_update_item_kwargs(
             continue
         elif val == '':
             val = None
-        elif isinstance(val, Enum):
-            val = val.name
+        else:
+            val = to_dynamodb_compatible_type(val)
 
         update_expression.append(f'#{field.name} = :{field.name}')
         expression_attribute_names[f'#{field.name}'] = to_camel_case(field.name)
