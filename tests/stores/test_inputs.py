@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Optional, Tuple, Union
@@ -19,7 +20,7 @@ class CreateTestInput(AbstractInputData):
     name: str
     size: float
     created_by: str
-    created_at: str
+    created_at: datetime
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     item_type: str = 'TEST'
@@ -29,7 +30,7 @@ class CreateTestInput(AbstractInputData):
 @dataclass
 class UpdateTestInput(AbstractInputData):
     id: str
-    updated_at: str
+    updated_at: datetime
     name: Optional[str] = None
     size: Optional[float] = None
     company_number: Optional[str] = None
@@ -69,7 +70,7 @@ def test_to_new_put_item() -> None:
         created_by='123',
         company_number='CO1',
         company_type='PLC',
-        created_at='2021-04-29T23:00:00Z'
+        created_at=datetime(2021, 4, 29, 23, 0, 0, tzinfo=timezone.utc)
     )
     parser = TestInputParser(input_data)
 
@@ -84,7 +85,7 @@ def test_to_new_put_item() -> None:
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',
-        'createdAt': '2021-04-29T23:00:00Z',
+        'createdAt': '2021-04-29T23:00:00+00:00',
         'itemType': 'TEST',
         'status': TestStatus.ACTIVE.name,
     }
@@ -99,7 +100,8 @@ def test_to_update_item_args() -> None:
         name='Test 2',
         size=2.5,
         company_number='CO2',
-        updated_at='2021-04-20T23:00:00Z'
+        status=TestStatus.DELETED,
+        updated_at=datetime(2021, 4, 20, 23, 0, 0)
     )
     parser = TestInputParser(record)
 
@@ -110,13 +112,15 @@ def test_to_update_item_args() -> None:
             '#name = :name, '
             '#size = :size, '
             '#company_number = :company_number, '
+            '#status = :status, '
             '#SK_GSI1 = :SK_GSI1'
         ),
         'ExpressionAttributeValues': {
-            ':updated_at': '2021-04-20T23:00:00Z',
+            ':updated_at': '2021-04-20T23:00:00+00:00',
             ':name': 'Test 2',
             ':size': Decimal('2.5'),
             ':company_number': 'CO2',
+            ':status': 'DELETED',
             ':SK_GSI1': 'COMPANY#CO2',
         },
         'ExpressionAttributeNames': {
@@ -125,6 +129,7 @@ def test_to_update_item_args() -> None:
             '#name': 'name',
             '#size': 'size',
             '#company_number': 'companyNumber',
+            '#status': 'status',
             '#SK_GSI1': 'SK_GSI1',
         },
         'ConditionExpression': 'attribute_exists(#id)',
@@ -139,6 +144,28 @@ def test_graphql_payload_to_input() -> None:
         'name': 'Test 1',
         'size': 1.5,
         'companyNumber': 'CO2',
+        'updatedAt': '2021-04-20T23:00:00Z',
+    }
+
+    result = graphql_payload_to_input(payload, UpdateTestInput)
+
+    assert isinstance(result, UpdateTestInput)
+    assert result.id == 'test-2'
+    assert result.name == 'Test 1'
+    assert result.size == 1.5
+    assert result.company_number == 'CO2'
+    assert result.updated_at == datetime(
+        2021, 4, 20, 23, 0, 0, tzinfo=timezone.utc)
+    assert result.company_type is None
+
+
+def test_graphql_payload_to_input_with_kwarg_overrides() -> None:
+    payload = {
+        'id': 'test-2',
+        'name': 'Test 1',
+        'size': 1.5,
+        'companyNumber': 'CO2',
+        'status': 'DELETED',
     }
 
     result = graphql_payload_to_input(
@@ -153,3 +180,4 @@ def test_graphql_payload_to_input() -> None:
     assert result.company_number == 'CO2'
     assert result.updated_at == '2021-04-20T23:00:00Z'
     assert result.company_type is None
+    assert result.status == TestStatus.DELETED

@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.6
+=====
+- Parsing of enums, dates and datetimes between GraphQL, Python and DynamoDB
+
 0.0.5
 =====
 - More flexible type-checking for graphql_payload_to_input kwargs

@@ -3,7 +3,8 @@ from dataclasses import dataclass, asdict, fields
 from typing import Any, Dict, List, Protocol, Tuple, Type
 
 from ppaya_lambda_utils.stores.utils import (
-    to_dynamodb_compatible_type, to_camel_case, dict_to_camel_case)
+    graphql_value_to_typed, to_dynamodb_compatible_type,
+    to_camel_case, dict_to_camel_case)
 
 
 @dataclass
@@ -144,8 +145,11 @@ def graphql_payload_to_input(
     """
     input_kwargs: Dict[str, Any] = kwargs or {}
     for field in fields(input_class):
-        input_kwargs.setdefault(
-            field.name,
-            payload.get(to_camel_case(field.name), field.default))
+        val = payload.get(to_camel_case(field.name))
+        if val:
+            val = graphql_value_to_typed(val, field.type)
+        else:
+            val = field.default
+        input_kwargs.setdefault(field.name, val)
     input_data: AbstractInputData = input_class(**input_kwargs)
     return input_data
