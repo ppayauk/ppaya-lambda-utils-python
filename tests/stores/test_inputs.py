@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from ppaya_lambda_utils.stores.inputs import (
     AbstractInputData, AbstracInputParser,
@@ -15,10 +15,17 @@ class TestStatus(Enum):
 
 
 @dataclass
+class NestedDataClass(AbstractInputData):
+    field_one: str
+    field_two: int
+
+
+@dataclass
 class CreateTestInput(AbstractInputData):
     id: str
     name: str
     size: float
+    nested_data: List[NestedDataClass]
     created_by: str
     created_at: datetime
     company_number: Optional[str] = None
@@ -33,6 +40,7 @@ class UpdateTestInput(AbstractInputData):
     updated_at: datetime
     name: Optional[str] = None
     size: Optional[float] = None
+    nested_data: Optional[List[NestedDataClass]] = None
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     status: Optional[TestStatus] = None
@@ -67,6 +75,7 @@ def test_to_new_put_item() -> None:
         id='id-1',
         name='Test',
         size=1.5,
+        nested_data=[NestedDataClass(field_one='one', field_two=2)],
         created_by='123',
         company_number='CO1',
         company_type='PLC',
@@ -82,6 +91,7 @@ def test_to_new_put_item() -> None:
         'id': 'id-1',
         'name': 'Test',
         'size': Decimal('1.5'),
+        'nested_data': [{'fieldOne': 'one', 'fieldTwo': 2}],
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',
@@ -99,6 +109,7 @@ def test_to_update_item_args() -> None:
         id='id-1',
         name='Test 2',
         size=2.5,
+        nested_data=[NestedDataClass(field_one='one', field_two=2)],
         company_number='CO2',
         status=TestStatus.DELETED,
         updated_at=datetime(2021, 4, 20, 23, 0, 0)
@@ -111,6 +122,7 @@ def test_to_update_item_args() -> None:
             'SET #updated_at = :updated_at, '
             '#name = :name, '
             '#size = :size, '
+            '#nested_data = :nested_data, '
             '#company_number = :company_number, '
             '#status = :status, '
             '#SK_GSI1 = :SK_GSI1'
@@ -119,6 +131,7 @@ def test_to_update_item_args() -> None:
             ':updated_at': '2021-04-20T23:00:00+00:00',
             ':name': 'Test 2',
             ':size': Decimal('2.5'),
+            ':nested_data': [{'fieldOne': 'one', 'fieldTwo': 2}],
             ':company_number': 'CO2',
             ':status': 'DELETED',
             ':SK_GSI1': 'COMPANY#CO2',
@@ -128,6 +141,7 @@ def test_to_update_item_args() -> None:
             '#updated_at': 'updatedAt',
             '#name': 'name',
             '#size': 'size',
+            '#nested_data': 'nestedData',
             '#company_number': 'companyNumber',
             '#status': 'status',
             '#SK_GSI1': 'SK_GSI1',
@@ -143,16 +157,26 @@ def test_graphql_payload_to_input() -> None:
         'id': 'test-2',
         'name': 'Test 1',
         'size': 1.5,
+        'nestedData': [{'fieldOne': 'one', 'fieldTwo': 2}],
         'companyNumber': 'CO2',
         'updatedAt': '2021-04-20T23:00:00Z',
     }
 
-    result = graphql_payload_to_input(payload, UpdateTestInput)
+    assert isinstance(payload['nestedData'], list)
+    nested_data = [
+        graphql_payload_to_input(x, NestedDataClass)
+        for x in payload['nestedData']]
+
+    result = graphql_payload_to_input(
+        payload,
+        UpdateTestInput,
+        nested_data=nested_data)
 
     assert isinstance(result, UpdateTestInput)
     assert result.id == 'test-2'
     assert result.name == 'Test 1'
     assert result.size == 1.5
+    assert result.nested_data == [NestedDataClass(field_one='one', field_two=2)]
     assert result.company_number == 'CO2'
     assert result.updated_at == datetime(
         2021, 4, 20, 23, 0, 0, tzinfo=timezone.utc)

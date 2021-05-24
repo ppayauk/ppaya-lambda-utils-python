@@ -104,6 +104,8 @@ def to_update_item_kwargs(
             continue
         elif val == '':
             val = None
+        if isinstance(val, list):
+            val = [to_dynamodb_compatible_type(x) for x in val]
         else:
             val = to_dynamodb_compatible_type(val)
 

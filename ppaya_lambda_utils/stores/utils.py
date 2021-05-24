@@ -1,3 +1,4 @@
+import dataclasses
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum, EnumMeta
@@ -26,8 +27,20 @@ def dict_to_camel_case(snake_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert all keys in a dictionary from snake case to camel case.
     """
-    return {
-        to_camel_case(k): v for k, v in snake_dict.items()}
+    result: Dict[str, Any] = {}
+    for k, v in snake_dict.items():
+        if isinstance(v, list):
+            result[k] = []
+            for x in v:
+                if isinstance(x, dict):
+                    result[k].append(dict_to_camel_case(x))
+                else:
+                    result[k].append(x)
+        elif isinstance(v, dict):
+            result[k] = dict_to_camel_case(v)
+        else:
+            result[to_camel_case(k)] = v
+    return result
 
 
 def to_dynamodb_compatible_type(val: Any) -> Any:
@@ -35,6 +48,10 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
     Convert a value to a type compatible with dynamodb datatypes.
     """
     result: Any = None
+
+    if isinstance(val, (str, int)):
+        return val
+
     if isinstance(val, Enum):
         result = val.name
     elif isinstance(val, float):
@@ -46,6 +63,14 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
             result = val.astimezone(timezone.utc).isoformat()
     elif isinstance(val, date):
         result = val.isoformat()
+    elif isinstance(val, dict):
+        result = {
+            to_camel_case(k): to_dynamodb_compatible_type(v)
+            for k, v in val.items()}
+    elif dataclasses.is_dataclass(val):
+        result = {
+            to_camel_case(k): to_dynamodb_compatible_type(v)
+            for k, v in dataclasses.asdict(val).items()}
     else:
         result = val
     return result
