@@ -37,6 +37,14 @@ def test_to_camel_case(val, expected) -> None:
         ({}, {}),
         ({'some_key': 'some value'}, {'someKey': 'some value'}),
         ({'my_key': 'a', 'other_key': 'b'}, {'myKey': 'a', 'otherKey': 'b'}),
+        (
+            {'my_key': {'nested_key': 'a'}, 'other_key': 'b'},
+            {'myKey': {'nestedKey': 'a'}, 'otherKey': 'b'},
+        ),
+        (
+            {'my_key': [{'nested_key': 'a'}], 'other_key': [1, 2]},
+            {'myKey': [{'nestedKey': 'a'}], 'otherKey': [1, 2]},
+        ),
     ]
 )
 def test_dict_to_camel_case(val, expected) -> None:

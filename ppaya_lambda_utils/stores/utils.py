@@ -1,3 +1,4 @@
+import dataclasses
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum, EnumMeta
@@ -26,8 +27,21 @@ def dict_to_camel_case(snake_dict: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert all keys in a dictionary from snake case to camel case.
     """
-    return {
-        to_camel_case(k): v for k, v in snake_dict.items()}
+    result: Dict[str, Any] = {}
+    for k, v in snake_dict.items():
+        if isinstance(v, list):
+            val = []
+            for x in v:
+                if isinstance(x, dict):
+                    val.append(dict_to_camel_case(x))
+                else:
+                    val.append(x)
+            result[to_camel_case(k)] = val
+        elif isinstance(v, dict):
+            result[to_camel_case(k)] = dict_to_camel_case(v)
+        else:
+            result[to_camel_case(k)] = v
+    return result
 
 
 def to_dynamodb_compatible_type(val: Any) -> Any:
@@ -35,6 +49,11 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
     Convert a value to a type compatible with dynamodb datatypes.
     """
     result: Any = None
+
+    if isinstance(val, (str, int)):
+        # Return early for most common case
+        return val
+
     if isinstance(val, Enum):
         result = val.name
     elif isinstance(val, float):
@@ -46,6 +65,14 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
             result = val.astimezone(timezone.utc).isoformat()
     elif isinstance(val, date):
         result = val.isoformat()
+    elif isinstance(val, dict):
+        result = {
+            to_camel_case(k): to_dynamodb_compatible_type(v)
+            for k, v in val.items()}
+    elif dataclasses.is_dataclass(val):
+        result = {
+            to_camel_case(k): to_dynamodb_compatible_type(v)
+            for k, v in dataclasses.asdict(val).items()}
     else:
         result = val
     return result
@@ -62,7 +89,9 @@ def graphql_value_to_typed(val: Any, to_type: Type) -> Any:
     result = val
     type_args = get_args(to_type)
     if isinstance(val, str):
-        if datetime in type_args or to_type == datetime:
+        if str in type_args or to_type == str:
+            result = val
+        elif datetime in type_args or to_type == datetime:
             result = datetime.fromisoformat(val.replace('Z', '+00:00'))
         elif date in type_args or to_type == date:
             result = date.fromisoformat(val)

@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.7
+=====
+- Inputs handle nested data classes and graphql structures
+
 0.0.6
 =====
 - Parsing of enums, dates and datetimes between GraphQL, Python and DynamoDB
