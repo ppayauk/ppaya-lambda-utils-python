@@ -16,7 +16,7 @@ class TestStatus(Enum):
 
 @dataclass
 class NestedDataClass(AbstractInputData):
-    field_one: str
+    field_one: TestStatus
     field_two: int
 
 
@@ -75,7 +75,7 @@ def test_to_new_put_item() -> None:
         id='id-1',
         name='Test',
         size=1.5,
-        nested_data=[NestedDataClass(field_one='one', field_two=2)],
+        nested_data=[NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)],
         created_by='123',
         company_number='CO1',
         company_type='PLC',
@@ -91,7 +91,7 @@ def test_to_new_put_item() -> None:
         'id': 'id-1',
         'name': 'Test',
         'size': Decimal('1.5'),
-        'nestedData': [{'fieldOne': 'one', 'fieldTwo': 2}],
+        'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',
@@ -109,7 +109,7 @@ def test_to_update_item_args() -> None:
         id='id-1',
         name='Test 2',
         size=2.5,
-        nested_data=[NestedDataClass(field_one='one', field_two=2)],
+        nested_data=[NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)],
         company_number='CO2',
         status=TestStatus.DELETED,
         updated_at=datetime(2021, 4, 20, 23, 0, 0)
@@ -131,7 +131,7 @@ def test_to_update_item_args() -> None:
             ':updated_at': '2021-04-20T23:00:00+00:00',
             ':name': 'Test 2',
             ':size': Decimal('2.5'),
-            ':nested_data': [{'fieldOne': 'one', 'fieldTwo': 2}],
+            ':nested_data': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
             ':company_number': 'CO2',
             ':status': 'DELETED',
             ':SK_GSI1': 'COMPANY#CO2',
@@ -157,7 +157,7 @@ def test_graphql_payload_to_input() -> None:
         'id': 'test-2',
         'name': 'Test 1',
         'size': 1.5,
-        'nestedData': [{'fieldOne': 'one', 'fieldTwo': 2}],
+        'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'companyNumber': 'CO2',
         'updatedAt': '2021-04-20T23:00:00Z',
     }
@@ -176,7 +176,7 @@ def test_graphql_payload_to_input() -> None:
     assert result.id == 'test-2'
     assert result.name == 'Test 1'
     assert result.size == 1.5
-    assert result.nested_data == [NestedDataClass(field_one='one', field_two=2)]
+    assert result.nested_data == [NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)]
     assert result.company_number == 'CO2'
     assert result.updated_at == datetime(
         2021, 4, 20, 23, 0, 0, tzinfo=timezone.utc)
