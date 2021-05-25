@@ -91,7 +91,7 @@ def test_to_new_put_item() -> None:
         'id': 'id-1',
         'name': 'Test',
         'size': Decimal('1.5'),
-        'nested_data': [{'fieldOne': 'one', 'fieldTwo': 2}],
+        'nestedData': [{'fieldOne': 'one', 'fieldTwo': 2}],
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',

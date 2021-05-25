@@ -30,14 +30,15 @@ def dict_to_camel_case(snake_dict: Dict[str, Any]) -> Dict[str, Any]:
     result: Dict[str, Any] = {}
     for k, v in snake_dict.items():
         if isinstance(v, list):
-            result[k] = []
+            val = []
             for x in v:
                 if isinstance(x, dict):
-                    result[k].append(dict_to_camel_case(x))
+                    val.append(dict_to_camel_case(x))
                 else:
-                    result[k].append(x)
+                    val.append(x)
+            result[to_camel_case(k)] = val
         elif isinstance(v, dict):
-            result[k] = dict_to_camel_case(v)
+            result[to_camel_case(k)] = dict_to_camel_case(v)
         else:
             result[to_camel_case(k)] = v
     return result
@@ -50,6 +51,7 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
     result: Any = None
 
     if isinstance(val, (str, int)):
+        # Return early for most common case
         return val
 
     if isinstance(val, Enum):
@@ -87,7 +89,9 @@ def graphql_value_to_typed(val: Any, to_type: Type) -> Any:
     result = val
     type_args = get_args(to_type)
     if isinstance(val, str):
-        if datetime in type_args or to_type == datetime:
+        if str in type_args or to_type == str:
+            result = val
+        elif datetime in type_args or to_type == datetime:
             result = datetime.fromisoformat(val.replace('Z', '+00:00'))
         elif date in type_args or to_type == date:
             result = date.fromisoformat(val)
