@@ -65,6 +65,8 @@ def to_dynamodb_compatible_type(val: Any) -> Any:
             result = val.astimezone(timezone.utc).isoformat()
     elif isinstance(val, date):
         result = val.isoformat()
+    elif isinstance(val, list):
+        result = [to_dynamodb_compatible_type(x) for x in val]
     elif isinstance(val, dict):
         result = {
             to_camel_case(k): to_dynamodb_compatible_type(v)
