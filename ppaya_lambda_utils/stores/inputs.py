@@ -148,10 +148,10 @@ def graphql_payload_to_input(
     input_kwargs: Dict[str, Any] = kwargs or {}
     for field in fields(input_class):
         val = payload.get(to_camel_case(field.name))
-        if val:
-            val = graphql_value_to_typed(val, field.type)
-        else:
+        if val is None:
             val = field.default
+        else:
+            val = graphql_value_to_typed(val, field.type)
         input_kwargs.setdefault(field.name, val)
     input_data: AbstractInputData = input_class(**input_kwargs)
     return input_data
