@@ -28,6 +28,7 @@ class CreateTestInput(AbstractInputData):
     nested_data: List[NestedDataClass]
     created_by: str
     created_at: datetime
+    my_flag: bool = False
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     item_type: str = 'TEST'
@@ -40,6 +41,7 @@ class UpdateTestInput(AbstractInputData):
     updated_at: datetime
     name: Optional[str] = None
     size: Optional[float] = None
+    my_flag: Optional[bool] = None
     nested_data: Optional[List[NestedDataClass]] = None
     company_number: Optional[str] = None
     company_type: Optional[str] = None
@@ -91,6 +93,7 @@ def test_to_new_put_item() -> None:
         'id': 'id-1',
         'name': 'Test',
         'size': Decimal('1.5'),
+        'myFlag': False,
         'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'createdBy': '123',
         'companyNumber': 'CO1',
@@ -109,6 +112,7 @@ def test_to_update_item_args() -> None:
         id='id-1',
         name='Test 2',
         size=2.5,
+        my_flag=False,
         nested_data=[NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)],
         company_number='CO2',
         status=TestStatus.DELETED,
@@ -122,6 +126,7 @@ def test_to_update_item_args() -> None:
             'SET #updated_at = :updated_at, '
             '#name = :name, '
             '#size = :size, '
+            '#my_flag = :my_flag, '
             '#nested_data = :nested_data, '
             '#company_number = :company_number, '
             '#status = :status, '
@@ -131,6 +136,7 @@ def test_to_update_item_args() -> None:
             ':updated_at': '2021-04-20T23:00:00+00:00',
             ':name': 'Test 2',
             ':size': Decimal('2.5'),
+            ':my_flag': False,
             ':nested_data': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
             ':company_number': 'CO2',
             ':status': 'DELETED',
@@ -141,6 +147,7 @@ def test_to_update_item_args() -> None:
             '#updated_at': 'updatedAt',
             '#name': 'name',
             '#size': 'size',
+            '#my_flag': 'myFlag',
             '#nested_data': 'nestedData',
             '#company_number': 'companyNumber',
             '#status': 'status',
@@ -157,6 +164,7 @@ def test_graphql_payload_to_input() -> None:
         'id': 'test-2',
         'name': 'Test 1',
         'size': 1.5,
+        'myFlag': False,
         'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'companyNumber': 'CO2',
         'updatedAt': '2021-04-20T23:00:00Z',
@@ -176,6 +184,7 @@ def test_graphql_payload_to_input() -> None:
     assert result.id == 'test-2'
     assert result.name == 'Test 1'
     assert result.size == 1.5
+    assert result.my_flag is False
     assert result.nested_data == [NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)]
     assert result.company_number == 'CO2'
     assert result.updated_at == datetime(
