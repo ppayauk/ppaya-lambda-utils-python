@@ -1,16 +1,20 @@
 from __future__ import annotations
 import json
-from typing import Any, List, Optional, Set, Dict, TYPE_CHECKING
+from typing import (
+    Any, List, Literal, Optional, Set, Dict, TYPE_CHECKING, Union)
 
 import boto3
 from botocore.config import Config
 
+from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException
 from ppaya_lambda_utils.logging_utils import get_logger_factory
 
 if TYPE_CHECKING:
     from mypy_boto3_sns import SNSClient
     from mypy_boto3_sqs import SQSServiceResource
     from mypy_boto3_sqs.type_defs import SendMessageBatchRequestEntryTypeDef
+    from mypy_boto3_lambda.client import LambdaClient
+    from mypy_boto3_lambda.type_defs import InvocationResponseTypeDef
 
 
 logger = get_logger_factory(__name__)()
@@ -120,3 +124,33 @@ def send_to_sqs(
         message_ids.update([x['MessageId'] for x in successful])
 
     return message_ids
+
+
+def invoke_lambda_function(
+    function_name: str,
+    payload: Dict[str, Any],
+    invocation_type: Union[Literal['Event'], Literal['RequestResponse']] = 'Event'
+) -> Any:
+    client: LambdaClient = boto_clients.get_client('lambda')
+    resp: InvocationResponseTypeDef = client.invoke(
+        FunctionName=function_name,
+        InvocationType=invocation_type,
+        Payload=bytes(json.dumps(payload), encoding='utf-8'),
+
+    )
+
+    success_codes: Dict[Union[Literal['Event'], Literal['RequestResponse']], int] = {
+        'Event': 202, 'RequestResponse': 200}
+
+    if resp['StatusCode'] != success_codes[invocation_type] or resp.get('FunctionError'):
+        logger.error({
+            'msg': f'Invoke lambda function failed: {function_name}',
+            'function_name': function_name,
+            'response': resp,
+            'payload': payload,
+        })
+        raise InvokeLambdaFunctionException(
+            f'Invoke function failed: {function_name}')
+
+    if invocation_type == 'RequestResponse':
+        return json.loads(resp['Payload'].read())
