@@ -2,6 +2,11 @@
 Change Log
 **********
 
+0.0.8
+=====
+- Add helper function for invoking lambda functions.
+- Add helper function for deleting a dynamodb item.
+
 0.0.7
 =====
 - Inputs handle nested data classes and graphql structures

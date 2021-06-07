@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from ppaya_lambda_utils.boto_utils import boto_clients
+from ppaya_lambda_utils.stores.exceptions import ItemNotFoundException
 
 
 if TYPE_CHECKING:
@@ -50,3 +51,21 @@ class DynamoDBStore(object):
 
     def get_batch_writer(self) -> BatchWriter:
         return self.table.batch_writer()
+
+    def get_item(self, pkey: str, skey: str) -> Any:
+        item = self.table.get_item(Key={'PK': pkey, 'SK': skey})
+        try:
+            return item['Item']
+        except KeyError:
+            raise ItemNotFoundException(f'Item not found PK: {pkey}, SK: {skey}')
+
+    def delete_item(self, pkey: str, skey: str, batch=None) -> Any:
+        delete_kwargs: Dict[str, Any] = {
+            'Key': {'PK': pkey, 'SK': skey},
+        }
+        if batch:
+            batch.delete_item(**delete_kwargs)
+        else:
+            delete_kwargs['ReturnValues'] = 'ALL_OLD'
+            response = self.table.delete_item(**delete_kwargs)
+            return response.get('Attributes', {})
