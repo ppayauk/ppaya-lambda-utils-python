@@ -1,8 +1,12 @@
 from __future__ import annotations
+from decimal import Decimal
 import io
-from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException
 from typing import List, TYPE_CHECKING
 from unittest.mock import Mock
+
+
+from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException
+from ppaya_lambda_utils.testing_utils import load_sns_message_from_sqs
 
 import pytest
 
@@ -45,13 +49,13 @@ def test_send_to_sqs(sqs_queue) -> None:
 
 def test_publish_to_sns(sns_topic, sns_subscription) -> None:
     sns = boto_clients.get_client('sns')
-    message = {'x': 'y'}
+    message_in = {'x': 'y', 'my_decimal': Decimal('2.6')}
     message_attributes = {
         'message_type': {'DataType': 'String', 'StringValue': 'test'}}
-    publish_to_sns(sns, sns_topic.arn, message, message_attributes)
+    publish_to_sns(sns, sns_topic.arn, message_in, message_attributes)
 
-    message = sns_subscription.receive_messages(MaxNumberOfMessages=1)[0]
-    assert message == message
+    message_out = sns_subscription.receive_messages(MaxNumberOfMessages=1)[0]
+    assert load_sns_message_from_sqs(message_out) == {'x': 'y', 'my_decimal': '2.6'}
 
 
 def test_publish_to_sns_without_attributes(sns_topic, sns_subscription) -> None:
