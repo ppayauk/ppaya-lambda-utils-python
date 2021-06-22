@@ -3,6 +3,7 @@ import json
 from typing import (
     Any, List, Literal, Optional, Set, Dict, TYPE_CHECKING, Union)
 
+from aws_lambda_powertools.shared.json_encoder import Encoder
 import boto3
 from botocore.config import Config
 
@@ -81,7 +82,7 @@ def publish_to_sns(
     message_attributes = message_attributes or {}
     client.publish(
         TopicArn=topic_arn,
-        Message=json.dumps({'default': json.dumps(message)}),
+        Message=json.dumps({'default': json.dumps(message, cls=Encoder)}),
         MessageStructure='json',
         MessageAttributes=message_attributes
     )
@@ -135,8 +136,7 @@ def invoke_lambda_function(
     resp: InvocationResponseTypeDef = client.invoke(
         FunctionName=function_name,
         InvocationType=invocation_type,
-        Payload=bytes(json.dumps(payload), encoding='utf-8'),
-
+        Payload=bytes(json.dumps(payload, cls=Encoder), encoding='utf-8')
     )
 
     success_codes: Dict[Union[Literal['Event'], Literal['RequestResponse']], int] = {

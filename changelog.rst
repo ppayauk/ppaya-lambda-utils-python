@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.9
+=====
+- Use aws-lambda-powertools JSON encoder to handle decimals.
+
 0.0.8
 =====
 - Add helper function for invoking lambda functions.
