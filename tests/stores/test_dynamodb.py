@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import pytest
 
-from ppaya_lambda_utils.stores.dynamodb import DynamoDBStore
+from ppaya_lambda_utils.stores.dynamodb import DynamoDBStore, paginated_results
 from ppaya_lambda_utils.stores.exceptions import ItemNotFoundException
 
 
@@ -60,3 +60,23 @@ def test_batch_writer(dynamodb_table) -> None:
     assert my_test_store.get_item('1', '1') == item_1
     assert my_test_store.get_item('2', '2') == item_2
     assert my_test_store.get_item('3', '3') == item_3
+
+
+def test_paginated_results(dynamodb_table) -> None:
+    expected_count = 2000
+    with my_test_store.get_batch_writer() as batch:
+        for i in range(expected_count):
+            item = {'PK': 'X', 'SK': i}
+            my_test_store.put_item(item, batch)
+
+    fetch_count = 0
+    paginate_config: Dict[str, Any] = {
+        'TableName': my_test_store.table_name,
+        'Select': 'ALL_ATTRIBUTES',
+    }
+    for idx, item in enumerate(paginated_results('scan', paginate_config)):
+        assert item['PK'] == 'X'
+        assert item['SK'] == idx
+        fetch_count += 1
+
+    assert fetch_count == expected_count
