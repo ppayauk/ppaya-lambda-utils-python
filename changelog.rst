@@ -2,6 +2,11 @@
 Change Log
 **********
 
+0.0.10
+=====
+- Add dynamodb paginator helper function
+- Update aws-lambda-powertools to 1.18.1
+
 0.0.9
 =====
 - Use aws-lambda-powertools JSON encoder to handle decimals.
