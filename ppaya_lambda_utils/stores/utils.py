@@ -2,7 +2,7 @@ import dataclasses
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum, EnumMeta
-from typing import Any, Dict, get_args, Type
+from typing import Any, Dict, get_args, List, Tuple, Type
 
 
 def normalise_key(val: str) -> str:
@@ -90,18 +90,40 @@ def graphql_value_to_typed(val: Any, to_type: Type) -> Any:
     """
     result = val
     type_args = get_args(to_type)
+
     if isinstance(val, str):
         if str in type_args or to_type == str:
             result = val
-        elif datetime in type_args or to_type == datetime:
+        elif is_datetime_type(to_type, type_args):
             result = datetime.fromisoformat(val.replace('Z', '+00:00'))
-        elif date in type_args or to_type == date:
+        elif is_date_type(to_type, type_args):
             result = date.fromisoformat(val)
         elif EnumMeta in [type(x) for x in type_args]:
             result = [x for x in type_args if is_enum_type(x)][0][val]
         elif is_enum_type(to_type):
             result = to_type[val]
+
     return result
+
+
+def is_type(t: Type, t_args: Tuple, names: List[str]) -> bool:
+    for x in t_args:
+        if x.__name__ in names:
+            return True
+
+    if not t_args:
+        if t.__name__ in names:
+            return True
+
+    return False
+
+
+def is_date_type(t: Type, t_args: Tuple) -> bool:
+    return is_type(t, t_args, ['date', 'FakeDateMeta'])
+
+
+def is_datetime_type(t: Type, t_args: Tuple) -> bool:
+    return is_type(t, t_args, ['datetime', 'FakeDatetimeMeta'])
 
 
 def is_enum_type(T):

@@ -2,8 +2,12 @@
 Change Log
 **********
 
+0.0.11
+======
+- Add compatibility for freezegun which is widely used internally for mocking dates.
+
 0.0.10
-=====
+======
 - Add dynamodb paginator helper function
 - Update aws-lambda-powertools to 1.18.1
 

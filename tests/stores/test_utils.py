@@ -3,6 +3,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Optional, Union
 
+from freezegun import freeze_time
 import pytest
 
 from ppaya_lambda_utils.stores.utils import (
@@ -85,3 +86,16 @@ def test_to_dynamodb_compatible_type(val, expected) -> None:
 )
 def test_graphql_value_to_typed(val, to_type, expected) -> None:
     assert graphql_value_to_typed(val, to_type) == expected
+
+
+@pytest.mark.parametrize(
+    'val, to_type, expected', [
+        (date(2021, 1, 1), date, date(2021, 1, 1)),
+        ('2021-01-01', date, date(2021, 1, 1)),
+        ('2021-01-01T13:30:00+00:00', datetime, datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc)),
+        ('2021-01-01T13:30:00Z', datetime, datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc)),
+    ]
+)
+def test_graphql_value_to_typed_with_freezegun(val, to_type, expected) -> None:
+    with freeze_time('2022-01-01T13:30:00Z'):
+        assert graphql_value_to_typed(val, to_type) == expected
