@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.12
+======
+- Add notification client for use with internal PPAYA notification service.
+
 0.0.11
 ======
 - Add compatibility for freezegun which is widely used internally for mocking dates.
