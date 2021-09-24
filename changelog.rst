@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.13
+======
+- Improve logging when invoke lambda functions fail.
+
 0.0.12
 ======
 - Add notification client for use with internal PPAYA notification service.

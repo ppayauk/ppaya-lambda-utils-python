@@ -142,15 +142,21 @@ def invoke_lambda_function(
     success_codes: Dict[Union[Literal['Event'], Literal['RequestResponse']], int] = {
         'Event': 202, 'RequestResponse': 200}
 
+    resp_payload_stream = resp.get('Payload')
+    if resp_payload_stream:
+        resp_payload = resp_payload_stream.read()
+    else:
+        resp_payload = b''
+
     if resp['StatusCode'] != success_codes[invocation_type] or resp.get('FunctionError'):
         logger.error({
-            'msg': f'Invoke lambda function failed: {function_name}',
+            'msg': 'Invoke lambda function failed',
             'function_name': function_name,
             'response': resp,
+            'response_payload': resp_payload,
             'payload': payload,
         })
-        raise InvokeLambdaFunctionException(
-            f'Invoke function failed: {function_name}')
+        raise InvokeLambdaFunctionException(f'Invoke function failed: {function_name}')
 
     if invocation_type == 'RequestResponse':
-        return json.loads(resp['Payload'].read())
+        return json.loads(resp_payload)
