@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ppaya_lambda_utils.boto_utils import boto_clients, publish_to_sns
 
@@ -39,10 +39,27 @@ class NotificationClient(object):
         context: Dict[str, Any]
     ) -> None:
         event = {
-            "notification_type": "ADMIN_EMAIL",
-            "template_name": template_name,
-            "subject": subject,
-            "context": context,
+            'notification_type': 'ADMIN_EMAIL',
+            'template_name': template_name,
+            'subject': subject,
+            'context': context,
+        }
+
+        self.publish_notification(event)
+
+    def send_customer_notification(
+        self,
+        template_name: str,
+        subject: str,
+        context: Dict[str, Any],
+        recipients: List[str]
+    ) -> None:
+        event = {
+            'notification_type': 'CUSTOMER_EMAIL',
+            'template_name': template_name,
+            'subject': subject,
+            'context': context,
+            'recipients': recipients,
         }
 
         self.publish_notification(event)
