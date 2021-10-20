@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.14
+======
+- Add customer email to notification client.
+
 0.0.13
 ======
 - Improve logging when invoke lambda functions fail.
