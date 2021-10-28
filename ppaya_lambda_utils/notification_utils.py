@@ -82,4 +82,4 @@ def to_notification_display_datetime(
 
     tz = pytz.timezone(tz_name)
     dt_local = dt.astimezone(tz)
-    return dt_local.strftime('%d %b %Y, %H:%M%p - %Z')
+    return dt_local.strftime('%d %b %Y, %H:%M%p (%Z)')
