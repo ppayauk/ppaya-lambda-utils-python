@@ -49,9 +49,9 @@ def test_send_customer_notification(sns_topic, sns_subscription) -> None:
 
 @pytest.mark.parametrize(
     'dt_iso, expected', [
-        ('2021-10-29T12:45:00+01:00', '29 Oct 2021, 12:45PM (BST)'),
-        ('2021-10-29T12:45:00', '29 Oct 2021, 13:45PM (BST)'),
-        ('2022-11-29T12:45:00+00:00', '29 Nov 2022, 12:45PM (GMT)'),
+        ('2021-10-29T12:45:00+01:00', '29 Oct 2021, 12:45 PM (BST)'),
+        ('2021-10-29T12:45:00', '29 Oct 2021, 13:45 PM (BST)'),
+        ('2022-11-29T12:45:00+00:00', '29 Nov 2022, 12:45 PM (GMT)'),
     ]
 )
 def test_to_notification_display_datetime(dt_iso, expected) -> None:
