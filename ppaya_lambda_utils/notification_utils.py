@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import pytz
 from typing import Any, Dict, List, Optional
 
 from ppaya_lambda_utils.boto_utils import boto_clients, publish_to_sns
@@ -71,3 +72,14 @@ class NotificationClient(object):
             event['recipients_context'] = recipients_context
 
         self.publish_notification(event)
+
+
+def to_notification_display_datetime(
+    dt: datetime, tz_name: str = 'Europe/London'
+) -> str:
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=pytz.utc)
+
+    tz = pytz.timezone(tz_name)
+    dt_local = dt.astimezone(tz)
+    return dt_local.strftime('%d %b %Y, %H:%M%p - %Z')

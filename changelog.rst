@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.15
+======
+- Standardised formatting of datetime for notifications.
+
 0.0.14
 ======
 - Add customer email to notification client.

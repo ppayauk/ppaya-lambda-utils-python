@@ -1,4 +1,9 @@
-from ppaya_lambda_utils.notification_utils import NotificationClient
+from datetime import datetime
+
+import pytest
+
+from ppaya_lambda_utils.notification_utils import (
+    NotificationClient, to_notification_display_datetime)
 from ppaya_lambda_utils.testing_utils import load_sns_message_from_sqs
 
 
@@ -40,3 +45,15 @@ def test_send_customer_notification(sns_topic, sns_subscription) -> None:
         'context': {'a': 1},
         'recipients_context': {'paul@ppaya.co.uk': {'b': 2}},
     }
+
+
+@pytest.mark.parametrize(
+    'dt_iso, expected', [
+        ('2021-10-29T12:45:00+01:00', '29 Oct 2021, 12:45PM - BST'),
+        ('2021-10-29T12:45:00', '29 Oct 2021, 13:45PM - BST'),
+        ('2022-11-29T12:45:00+00:00', '29 Nov 2022, 12:45PM - GMT'),
+    ]
+)
+def test_to_notification_display_datetime(dt_iso, expected) -> None:
+    dt = datetime.fromisoformat(dt_iso)
+    assert to_notification_display_datetime(dt) == expected
