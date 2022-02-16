@@ -66,7 +66,7 @@ def test_paginated_results(dynamodb_table) -> None:
     expected_count = 2000
     with my_test_store.get_batch_writer() as batch:
         for i in range(expected_count):
-            item = {'PK': 'X', 'SK': i}
+            item = {'PK': 'X', 'SK': str(i)}
             my_test_store.put_item(item, batch)
 
     fetch_count = 0
@@ -76,7 +76,7 @@ def test_paginated_results(dynamodb_table) -> None:
     }
     for idx, item in enumerate(paginated_results('scan', paginate_config)):
         assert item['PK'] == 'X'
-        assert item['SK'] == idx
+        assert item['SK'] == str(idx)
         fetch_count += 1
 
     assert fetch_count == expected_count

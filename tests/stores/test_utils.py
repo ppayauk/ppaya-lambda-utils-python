@@ -72,20 +72,35 @@ def test_to_dynamodb_compatible_type(val, expected) -> None:
 
 
 @pytest.mark.parametrize(
-    'val, to_type, expected', [
-        ('string', str, 'string'),
-        ('string', Optional[str], 'string'),
-        (1, int, 1),
-        (1, Union[int, float], 1),
-        ('OK', MyEnum, MyEnum.OK),
-        ('OK', Optional[MyEnum], MyEnum.OK),
-        ('2021-01-01', date, date(2021, 1, 1)),
-        ('2021-01-01T13:30:00+00:00', datetime, datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc)),
-        ('2021-01-01T13:30:00Z', datetime, datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc)),
+    'val, to_type, expected_value, expected_type', [
+        ('string', str, 'string', str),
+        ('string', Optional[str], 'string', str),
+        (1, int, 1, int),
+        (1, Union[int, float], 1, int),
+        (2.5, Decimal, Decimal('2.5'), Decimal),
+        ('2.5', Decimal, Decimal('2.5'), Decimal),
+        (2.5, Optional[Decimal], Decimal('2.5'), Decimal),
+        ('OK', MyEnum, MyEnum.OK, MyEnum),
+        ('OK', Optional[MyEnum], MyEnum.OK, MyEnum),
+        ('2021-01-01', date, date(2021, 1, 1), date),
+        (
+            '2021-01-01T13:30:00+00:00',
+            datetime,
+            datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc),
+            datetime
+        ),
+        (
+            '2021-01-01T13:30:00Z',
+            datetime,
+            datetime(2021, 1, 1, 13, 30, tzinfo=timezone.utc),
+            datetime
+        ),
     ]
 )
-def test_graphql_value_to_typed(val, to_type, expected) -> None:
-    assert graphql_value_to_typed(val, to_type) == expected
+def test_graphql_value_to_typed(val, to_type, expected_value, expected_type) -> None:
+    result = graphql_value_to_typed(val, to_type)
+    assert result == expected_value
+    assert isinstance(result, expected_type)
 
 
 @pytest.mark.parametrize(

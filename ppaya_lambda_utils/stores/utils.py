@@ -102,6 +102,12 @@ def graphql_value_to_typed(val: Any, to_type: Type) -> Any:
             result = [x for x in type_args if is_enum_type(x)][0][val]
         elif is_enum_type(to_type):
             result = to_type[val]
+        elif Decimal in type_args or to_type == Decimal:
+            result = Decimal(val)
+
+    elif isinstance(val, (int, float)):
+        if Decimal in type_args or to_type == Decimal:
+            result = Decimal(val)
 
     return result
 
