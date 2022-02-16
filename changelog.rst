@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.17
+======
+- Helper function to start sync execution of express step function workflows.
+
 0.0.16
 ======
 - Handle deserializtion of decimal fields in input classes.

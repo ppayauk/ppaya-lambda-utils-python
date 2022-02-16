@@ -7,7 +7,8 @@ from aws_lambda_powertools.shared.json_encoder import Encoder
 import boto3
 from botocore.config import Config
 
-from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException
+from ppaya_lambda_utils.exceptions import (
+    InvokeLambdaFunctionException, WorkflowException)
 from ppaya_lambda_utils.logging_utils import get_logger_factory
 
 if TYPE_CHECKING:
@@ -161,3 +162,36 @@ def invoke_lambda_function(
 
     if invocation_type == 'RequestResponse':
         return json.loads(resp_payload)
+
+
+def start_sync_workflow(
+    input: Dict[str, Any],
+    state_machine_arn: str
+) -> Dict[str, Any]:
+    """
+    Synchronously execute a step function express workflow.
+    If successful, the function returns the `output` dictionary from the response.
+    If unsuccessful, a WorkflowException error is raised.
+    """
+    client = boto_clients.get_client('stepfunctions')
+    resp = client.start_sync_execution(
+        stateMachineArn=state_machine_arn,
+        input=json.dumps(input),
+    )
+    assert isinstance(resp, Dict)
+    status = resp.get('status')
+    if status == 'SUCCEEDED':
+        result = json.loads(resp['output'])
+    elif status == 'FAILED':
+        error_data = json.loads(resp.get('cause', '{}'))
+        raise WorkflowException(
+            error_data.get('errorMessage', 'Workflow failed'),
+            error_data.get('errorType', 'Unknown')
+        )
+    elif status == 'TIMED_OUT':
+        raise WorkflowException('Workflow timed out', 'TimeoutError')
+    else:
+        raise WorkflowException(f'Unknown workflow status: {status}', 'UnknownStatus')
+
+    assert isinstance(result, Dict)
+    return result

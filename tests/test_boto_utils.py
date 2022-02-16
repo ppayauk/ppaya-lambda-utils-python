@@ -1,17 +1,19 @@
 from __future__ import annotations
 from decimal import Decimal
 import io
+import json
 from typing import List, TYPE_CHECKING
 from unittest.mock import Mock
 
 
-from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException
+from ppaya_lambda_utils.exceptions import InvokeLambdaFunctionException, WorkflowException
 from ppaya_lambda_utils.testing_utils import load_sns_message_from_sqs
 
 import pytest
 
 from ppaya_lambda_utils.boto_utils import (
-    invoke_lambda_function, send_to_sqs, boto_clients, publish_to_sns)
+    invoke_lambda_function, send_to_sqs, boto_clients, publish_to_sns,
+    start_sync_workflow)
 
 if TYPE_CHECKING:
     from mypy_boto3_sqs.type_defs import SendMessageBatchRequestEntryTypeDef
@@ -95,3 +97,31 @@ def test_invoke_lambda_function_with_request_response_invocation_type(mocker):
     resp = invoke_lambda_function('test_func', {'msg': 'blah'}, 'RequestResponse')
 
     assert resp == {'x': 1}
+
+
+def test_start_sync_workflow(mocker):
+    mock_sfn_client = Mock()
+    output = {'b': 2}
+    mock_sfn_client().start_sync_execution.return_value = {
+        'status': 'SUCCEEDED',
+        'output': json.dumps(output),
+    }
+    mocker.patch.object(boto_clients, 'get_client', mock_sfn_client)
+
+    resp = start_sync_workflow({'a': 1}, 'state-machine-arn')
+
+    assert resp == output
+
+
+def test_start_sync_workflow_with_failure(mocker):
+    mock_sfn_client = Mock()
+    error_cause = {'errorMessage': 'Oops', 'errorType': 'OopsError'}
+    mock_sfn_client().start_sync_execution.return_value = {
+        'status': 'FAILED',
+        'cause': json.dumps(error_cause),
+    }
+    mocker.patch.object(boto_clients, 'get_client', mock_sfn_client)
+
+    with pytest.raises(WorkflowException) as err_info:
+        start_sync_workflow({'a': 1}, 'state-machine-arn')
+    assert str(err_info.value) == 'OopsError: Oops'
