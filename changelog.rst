@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.16
+======
+- Handle deserializtion of decimal fields in input classes.
+
 0.0.15
 ======
 - Standardised formatting of datetime for notifications.

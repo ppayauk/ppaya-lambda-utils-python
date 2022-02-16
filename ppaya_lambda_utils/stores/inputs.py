@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from dataclasses import dataclass, asdict, fields
+from dataclasses import asdict, fields
 from typing import Any, Dict, List, Protocol, Tuple, Type
 
 from ppaya_lambda_utils.stores.utils import (
@@ -7,7 +7,6 @@ from ppaya_lambda_utils.stores.utils import (
     to_camel_case, dict_to_camel_case)
 
 
-@dataclass
 class AbstractInputData(Protocol):
     """
     A protocol / interface that all input data classes should implement for
@@ -44,6 +43,17 @@ class AbstracInputParser(Protocol):
         raise NotImplementedError()
 
 
+def input_to_graphql(input_data: AbstractInputData) -> Dict[str, Any]:
+    """
+    Transforms an `AbstractInputData` instance to a dictionary with
+    camel case keys and appropriate value types for returning to a GraphQL
+    resolver.
+    """
+    item = asdict(input_data)
+    item = {k: to_dynamodb_compatible_type(v) for k, v in item.items()}
+    return dict_to_camel_case(item)
+
+
 def to_new_put_item(parser: AbstracInputParser) -> Dict[str, Any]:
     """
     Create an item dictionary to pass as an argument to boto3 dynamodb
@@ -59,11 +69,7 @@ def to_new_put_item(parser: AbstracInputParser) -> Dict[str, Any]:
         item = to_new_put_item(parser)
         table.put_item(Item=item)
     """
-    item = asdict(parser.input_data)
-    assert isinstance(item, dict)
-    item = {k: to_dynamodb_compatible_type(v) for k, v in item.items()}
-
-    item = dict_to_camel_case(item)
+    item = input_to_graphql(parser.input_data)
     item['PK'] = parser.get_pk()
     item['SK'] = parser.get_sk()
     __, pk_gsi1 = parser.get_pk_gsi1()

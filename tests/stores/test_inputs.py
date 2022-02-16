@@ -9,14 +9,14 @@ from ppaya_lambda_utils.stores.inputs import (
     to_new_put_item, to_update_item_kwargs, graphql_payload_to_input)
 
 
-class TestStatus(Enum):
+class MyTestStatus(Enum):
     ACTIVE = 1
     DELETED = 2
 
 
 @dataclass
 class NestedDataClass(AbstractInputData):
-    field_one: TestStatus
+    field_one: MyTestStatus
     field_two: int
 
 
@@ -32,7 +32,7 @@ class CreateTestInput(AbstractInputData):
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     item_type: str = 'TEST'
-    status: TestStatus = TestStatus.ACTIVE
+    status: MyTestStatus = MyTestStatus.ACTIVE
 
 
 @dataclass
@@ -45,10 +45,10 @@ class UpdateTestInput(AbstractInputData):
     nested_data: Optional[List[NestedDataClass]] = None
     company_number: Optional[str] = None
     company_type: Optional[str] = None
-    status: Optional[TestStatus] = None
+    status: Optional[MyTestStatus] = None
 
 
-class TestInputParser(AbstracInputParser):
+class MyTestInputParser(AbstracInputParser):
     def __init__(
             self,
             input_data: Union[CreateTestInput, UpdateTestInput]) -> None:
@@ -77,13 +77,13 @@ def test_to_new_put_item() -> None:
         id='id-1',
         name='Test',
         size=1.5,
-        nested_data=[NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)],
+        nested_data=[NestedDataClass(field_one=MyTestStatus.ACTIVE, field_two=2)],
         created_by='123',
         company_number='CO1',
         company_type='PLC',
         created_at=datetime(2021, 4, 29, 23, 0, 0, tzinfo=timezone.utc)
     )
-    parser = TestInputParser(input_data)
+    parser = MyTestInputParser(input_data)
 
     expected = {
         'PK': 'TEST#id-1',
@@ -94,13 +94,13 @@ def test_to_new_put_item() -> None:
         'name': 'Test',
         'size': Decimal('1.5'),
         'myFlag': False,
-        'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
+        'nestedData': [{'fieldOne': MyTestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'createdBy': '123',
         'companyNumber': 'CO1',
         'companyType': 'PLC',
         'createdAt': '2021-04-29T23:00:00+00:00',
         'itemType': 'TEST',
-        'status': TestStatus.ACTIVE.name,
+        'status': MyTestStatus.ACTIVE.name,
     }
     item = to_new_put_item(parser)
     assert item == expected
@@ -113,12 +113,12 @@ def test_to_update_item_args() -> None:
         name='Test 2',
         size=2.5,
         my_flag=False,
-        nested_data=[NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)],
+        nested_data=[NestedDataClass(field_one=MyTestStatus.ACTIVE, field_two=2)],
         company_number='CO2',
-        status=TestStatus.DELETED,
+        status=MyTestStatus.DELETED,
         updated_at=datetime(2021, 4, 20, 23, 0, 0)
     )
-    parser = TestInputParser(record)
+    parser = MyTestInputParser(record)
 
     expected = {
         'Key': {'PK': 'TEST#id-1', 'SK': 'TEST#id-1'},
@@ -137,7 +137,7 @@ def test_to_update_item_args() -> None:
             ':name': 'Test 2',
             ':size': Decimal('2.5'),
             ':my_flag': False,
-            ':nested_data': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
+            ':nested_data': [{'fieldOne': MyTestStatus.ACTIVE.name, 'fieldTwo': 2}],
             ':company_number': 'CO2',
             ':status': 'DELETED',
             ':SK_GSI1': 'COMPANY#CO2',
@@ -165,7 +165,7 @@ def test_graphql_payload_to_input() -> None:
         'name': 'Test 1',
         'size': 1.5,
         'myFlag': False,
-        'nestedData': [{'fieldOne': TestStatus.ACTIVE.name, 'fieldTwo': 2}],
+        'nestedData': [{'fieldOne': MyTestStatus.ACTIVE.name, 'fieldTwo': 2}],
         'companyNumber': 'CO2',
         'updatedAt': '2021-04-20T23:00:00Z',
     }
@@ -185,7 +185,7 @@ def test_graphql_payload_to_input() -> None:
     assert result.name == 'Test 1'
     assert result.size == 1.5
     assert result.my_flag is False
-    assert result.nested_data == [NestedDataClass(field_one=TestStatus.ACTIVE, field_two=2)]
+    assert result.nested_data == [NestedDataClass(field_one=MyTestStatus.ACTIVE, field_two=2)]
     assert result.company_number == 'CO2'
     assert result.updated_at == datetime(
         2021, 4, 20, 23, 0, 0, tzinfo=timezone.utc)
@@ -213,4 +213,4 @@ def test_graphql_payload_to_input_with_kwarg_overrides() -> None:
     assert result.company_number == 'CO2'
     assert result.updated_at == '2021-04-20T23:00:00Z'
     assert result.company_type is None
-    assert result.status == TestStatus.DELETED
+    assert result.status == MyTestStatus.DELETED

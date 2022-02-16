@@ -47,7 +47,8 @@ class BotoClients(object):
     _default_config: Optional[Config] = None
 
     def __init__(self, config: Optional[Config] = None) -> None:
-        self.set_default_config(config)
+        if config:
+            self.set_default_config(config)
 
     def set_default_config(self, config: Config) -> None:
         self._default_config = config
