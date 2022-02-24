@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.0.18
+======
+- Improve handling of numeric input fields.
+
 0.0.17
 ======
 - Helper function to start sync execution of express step function workflows.

@@ -104,6 +104,10 @@ def graphql_value_to_typed(val: Any, to_type: Type) -> Any:
             result = to_type[val]
         elif Decimal in type_args or to_type == Decimal:
             result = Decimal(val)
+        elif int in type_args or to_type == int:
+            result = int(val)
+        elif float in type_args or to_type == float:
+            result = float(val)
 
     elif isinstance(val, (int, float)):
         if Decimal in type_args or to_type == Decimal:
