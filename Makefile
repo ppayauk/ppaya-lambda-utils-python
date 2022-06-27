@@ -5,6 +5,13 @@ ENV_NAME := dev
 AWS_REGION := ${AWS_REGION}
 
 
+init-dev-venv:
+	python3 -m venv .venv
+	.venv/bin/pip install -U pip
+	.venv/bin/pip install -r requirements_docker_dev.txt
+	.venv/bin/pip install -U docker-compose
+
+
 build-local-container:
 	docker-compose build cli
 

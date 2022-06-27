@@ -3,7 +3,7 @@ import json
 from aws_lambda_powertools import Logger
 import boto3
 from moto import (
-    mock_ssm, mock_kms, mock_sns, mock_sqs, mock_dynamodb2)
+    mock_ssm, mock_kms, mock_sns, mock_sqs, mock_dynamodb)
 import pytest
 
 
@@ -75,7 +75,7 @@ def sqs_queue(sqs):
 
 @pytest.fixture(scope='function')
 def dynamodb():
-    with mock_dynamodb2():
+    with mock_dynamodb():
         yield boto3.resource('dynamodb')
 
 

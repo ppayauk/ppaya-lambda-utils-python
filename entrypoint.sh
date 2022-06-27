@@ -12,15 +12,15 @@ elif [ $ARG1 = 'tests' ]
 then
     if [ $ARG2 = 'pytest-cov.txt' ]
     then
-        python -m pytest --cache-clear --cov=ppaya_lambda_utils tests > pytest-cov.txt
+        /.venv/bin/python -m pytest --cache-clear --cov=ppaya_lambda_utils tests > pytest-cov.txt
     else
-        python -m pytest $ARG2 -s --cache-clear --cov=ppaya_lambda_utils
+        /.venv/bin/python -m pytest $ARG2 -s --cache-clear --cov=ppaya_lambda_utils
     fi
 elif [ $ARG1 = 'lint' ]
 then
-    flake8 ./ppaya_lambda_utils ./tests
-    mypy --config-file mypy.ini ./ppaya_lambda_utils ./tests
+    /.venv/bin/flake8 ./ppaya_lambda_utils ./tests
+    /.venv/bin/mypy --config-file mypy.ini ./ppaya_lambda_utils ./tests
 elif [ $ARG1 = 'docs' ]
 then
-    cd docs && PYTHONPATH=../ppaya_lambda_utils_python make html
+    source /.venv/bin/activate; cd docs && PYTHONPATH=../salesforce_service make html
 fi

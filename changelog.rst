@@ -2,6 +2,11 @@
 Change Log
 **********
 
+0.0.19
+======
+- Add sqs event testing util.
+- Update dependencies.
+
 0.0.18
 ======
 - Improve handling of numeric input fields.

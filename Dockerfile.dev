@@ -1,9 +1,10 @@
-FROM amazon/aws-sam-cli-build-image-python3.8
+FROM public.ecr.aws/sam/build-python3.8:latest
 
 WORKDIR /opt/src
 ADD . /opt/src
 
-# Run pip to install all requirements
-RUN pip install --no-cache-dir -r requirements_docker_dev.txt
+RUN python -m venv /.venv
+RUN /.venv/bin/pip install -U pip
+RUN /.venv/bin/pip install --no-cache-dir -r requirements_docker_dev.txt
 
 ENTRYPOINT ./entrypoint.sh

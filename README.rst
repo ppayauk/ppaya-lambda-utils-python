@@ -14,8 +14,16 @@ requirments.
 Setting up a local dev environment
 ==================================
 
-You will need Docker_ installed on your local machine. The image used is the
-same as the AWS SAM CLI uses to build artefacts.
+You will need Docker_ installed on your local machine.
+
+Create a local python virtual environment for building, deploying and IDE
+code completion, type checking etc::
+
+    make init-dev-venv
+
+To activate the virtual environment::
+
+    source .venv/bin/activate
 
 *docker_dev.env* provides the environmental variables to be used at run-time
 within your local docker container for tests and debugging. You shouldn't
