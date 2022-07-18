@@ -6,7 +6,9 @@ from typing import List, Optional, Tuple, Union
 
 from ppaya_lambda_utils.stores.inputs import (
     AbstractInputData, AbstracInputParser,
-    to_new_put_item, to_update_item_kwargs, graphql_payload_to_input)
+    to_new_put_item, to_update_item_kwargs,
+    graphql_payload_to_input, payload_to_input
+)
 
 
 class MyTestStatus(Enum):
@@ -214,3 +216,36 @@ def test_graphql_payload_to_input_with_kwarg_overrides() -> None:
     assert result.updated_at == '2021-04-20T23:00:00Z'
     assert result.company_type is None
     assert result.status == MyTestStatus.DELETED
+
+
+def test_payload_to_input() -> None:
+    payload = {
+        'id': 'test-2',
+        'name': 'Test 1',
+        'size': 1.5,
+        'my_flag': False,
+        'nested_data': [{'field_one': MyTestStatus.ACTIVE.name, 'field_two': 2}],
+        'company_number': 'CO2',
+        'updated_at': '2021-04-20T23:00:00Z',
+    }
+
+    assert isinstance(payload['nested_data'], list)
+    nested_data = [
+        payload_to_input(x, NestedDataClass)
+        for x in payload['nested_data']]
+
+    result = payload_to_input(
+        payload,
+        UpdateTestInput,
+        nested_data=nested_data)
+
+    assert isinstance(result, UpdateTestInput)
+    assert result.id == 'test-2'
+    assert result.name == 'Test 1'
+    assert result.size == 1.5
+    assert result.my_flag is False
+    assert result.nested_data == [NestedDataClass(field_one=MyTestStatus.ACTIVE, field_two=2)]
+    assert result.company_number == 'CO2'
+    assert result.updated_at == datetime(
+        2021, 4, 20, 23, 0, 0, tzinfo=timezone.utc)
+    assert result.company_type is None

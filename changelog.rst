@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.l.0
+======
+- Add ability to load payloads with snake case fields into input classes.
+
 0.0.19
 ======
 - Add sqs event testing util.
