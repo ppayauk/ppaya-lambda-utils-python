@@ -140,20 +140,26 @@ def to_update_item_kwargs(
     return result
 
 
-def graphql_payload_to_input(
+def base_payload_to_input(
         payload: Dict[str, Any],
+        use_camel_case: bool,
         input_class=Type[AbstractInputData],
         **kwargs: Any) -> AbstractInputData:
     """
     Instantiate an input data class from a dictionary payload.
-    The payload is expected to be an argument from a graphql resolver event
-    with camel case fields.
+    If use_camel_case = True, `payload` is expected to be an argument from a
+    graphql resolver event with camel case fields.  Otherwise, `payload` is
+    expected to have pythonic, snake case fields.
     Additional kwargs will be passed directly to the input data class on
     instantiation.
     """
     input_kwargs: Dict[str, Any] = kwargs or {}
     for field in fields(input_class):
-        val = payload.get(to_camel_case(field.name))
+        if use_camel_case:
+            val = payload.get(to_camel_case(field.name))
+        else:
+            val = payload.get(field.name)
+
         if val is None:
             val = field.default
         else:
@@ -161,3 +167,29 @@ def graphql_payload_to_input(
         input_kwargs.setdefault(field.name, val)
     input_data: AbstractInputData = input_class(**input_kwargs)
     return input_data
+
+
+def graphql_payload_to_input(
+        payload: Dict[str, Any],
+        input_class=Type[AbstractInputData],
+        **kwargs: Any) -> AbstractInputData:
+    """
+    Instantiate an input data class from a dictionary payload with GraphQL style,
+    camel case fields.
+    Additional kwargs will be passed directly to the input data class on
+    instantiation.
+    """
+    return base_payload_to_input(payload, True, input_class, **kwargs)
+
+
+def payload_to_input(
+        payload: Dict[str, Any],
+        input_class=Type[AbstractInputData],
+        **kwargs: Any) -> AbstractInputData:
+    """
+    Instantiate an input data class from a dictionary payload with python style,
+    snake case fields.
+    Additional kwargs will be passed directly to the input data class on
+    instantiation.
+    """
+    return base_payload_to_input(payload, False, input_class, **kwargs)
