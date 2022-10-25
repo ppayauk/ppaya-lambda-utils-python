@@ -2,7 +2,11 @@
 Change Log
 **********
 
-0.l.0
+0.1.1
+======
+- Explicitly import validation dependencies for aws-lambda-powertools v2
+
+0.1.0
 ======
 - Add ability to load payloads with snake case fields into input classes.
 

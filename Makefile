@@ -6,6 +6,7 @@ AWS_REGION := ${AWS_REGION}
 
 
 init-dev-venv:
+	rm -rf .venv
 	python3 -m venv .venv
 	.venv/bin/pip install -U pip
 	.venv/bin/pip install -r requirements_docker_dev.txt
