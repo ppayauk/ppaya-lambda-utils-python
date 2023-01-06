@@ -2,6 +2,10 @@
 Change Log
 **********
 
+0.1.2
+======
+- Constants for explicitly updating dynamodb fields to null.
+
 0.1.1
 ======
 - Explicitly import validation dependencies for aws-lambda-powertools v2
