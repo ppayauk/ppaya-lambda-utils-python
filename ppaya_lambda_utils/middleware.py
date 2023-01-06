@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Callable, Dict, TYPE_CHECKING
+from typing import Any, Callable, Dict, Optional, TYPE_CHECKING
 
 from aws_lambda_powertools.middleware_factory import lambda_handler_decorator
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -11,15 +11,19 @@ if TYPE_CHECKING:
 
 @lambda_handler_decorator
 def observability_init_middleware(
-        handler: Callable, event: Dict[str, Any], context: LambdaContext,
-        logger: Logger, metrics: Metrics, log_structure: Dict[str, str] = None,
+        handler: Callable,
+        event: Dict[str, Any],
+        context: LambdaContext,
+        logger: Logger,
+        metrics: Metrics,
+        log_structure: Optional[Dict[str, str]] = None,
         *args, **kwargs) -> Any:
     """
     An aws_lambda_powertools middleware function setting up standard logging
     and metrics handling for lambda functions.
     """
     if log_structure:
-        logger.structure_logs(append=True, **log_structure)
+        logger.structure_logs(append=True, formatter_options=None, **log_structure)
     metrics.add_metadata(key='handler_name', value=handler.__module__)
     try:
         result = handler(event, context)

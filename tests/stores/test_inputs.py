@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import List, Optional, Tuple, Union
 
+from ppaya_lambda_utils.stores.constants import (
+    NULL_STRING, NULL_DATE, NULL_DATETIME
+)
 from ppaya_lambda_utils.stores.inputs import (
     AbstractInputData, AbstracInputParser,
     to_new_put_item, to_update_item_kwargs,
@@ -48,6 +51,8 @@ class UpdateTestInput(AbstractInputData):
     company_number: Optional[str] = None
     company_type: Optional[str] = None
     status: Optional[MyTestStatus] = None
+    my_datetime: Optional[datetime] = None
+    my_date: Optional[date] = None
 
 
 class MyTestInputParser(AbstracInputParser):
@@ -154,6 +159,43 @@ def test_to_update_item_args() -> None:
             '#company_number': 'companyNumber',
             '#status': 'status',
             '#SK_GSI1': 'SK_GSI1',
+        },
+        'ConditionExpression': 'attribute_exists(#id)',
+        'ReturnValues': 'ALL_NEW',
+    }
+    assert to_update_item_kwargs(parser) == expected
+
+
+def test_to_update_item_args_with_explicit_none() -> None:
+    record = UpdateTestInput(
+        id='id-1',
+        company_type=NULL_STRING,
+        my_date=NULL_DATE,
+        my_datetime=NULL_DATETIME,
+        updated_at=datetime(2021, 4, 20, 23, 0, 0)
+    )
+    parser = MyTestInputParser(record)
+
+    expected = {
+        'Key': {'PK': 'TEST#id-1', 'SK': 'TEST#id-1'},
+        'UpdateExpression': (
+            'SET #updated_at = :updated_at, '
+            '#company_type = :company_type, '
+            '#my_datetime = :my_datetime, '
+            '#my_date = :my_date'
+        ),
+        'ExpressionAttributeValues': {
+            ':updated_at': '2021-04-20T23:00:00+00:00',
+            ':company_type': None,
+            ':my_datetime': None,
+            ':my_date': None,
+        },
+        'ExpressionAttributeNames': {
+            '#id': 'id',
+            '#updated_at': 'updatedAt',
+            '#company_type': 'companyType',
+            '#my_datetime': 'myDatetime',
+            '#my_date': 'myDate',
         },
         'ConditionExpression': 'attribute_exists(#id)',
         'ReturnValues': 'ALL_NEW',

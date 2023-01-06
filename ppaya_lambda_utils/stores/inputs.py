@@ -2,6 +2,9 @@ from abc import abstractmethod
 from dataclasses import asdict, fields
 from typing import Any, Dict, List, Protocol, Tuple, Type
 
+from ppaya_lambda_utils.stores.constants import (
+    NULL_STRING, NULL_DATETIME, NULL_DATE
+)
 from ppaya_lambda_utils.stores.utils import (
     graphql_value_to_typed, to_dynamodb_compatible_type,
     to_camel_case, dict_to_camel_case)
@@ -108,7 +111,7 @@ def to_update_item_kwargs(
         if field.name == 'id':
             expression_attribute_names['#id'] = 'id'
             continue
-        elif val == '':
+        elif val in [NULL_DATE, NULL_DATETIME, NULL_STRING]:
             val = None
         if isinstance(val, list):
             val = [to_dynamodb_compatible_type(x) for x in val]
